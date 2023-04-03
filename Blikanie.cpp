@@ -1,96 +1,143 @@
 #include "mbed.h"
 
-Ticker tick1, tick2;
-DigitalOut led1(LED2); // used pin in brackets (závorka)
-DigitalOut led2(LED4); // used pin in brackets (závorka)
+#define WAIT_TIME_US 500000
 
-/* Control brightness of all LEDs, set different for every LED.*/
-void breathingBrightness()
+DigitalOut g_led_PTB2( PTB2, 0 );
+DigitalOut g_led_PTB3( PTB3, 0 );
+DigitalOut g_led_PTB9( PTB9, 0 );
+
+
+DigitalOut g_led_PTC0( PTC0, 0 );
+DigitalOut g_led_PTC1( PTC1, 0 );
+DigitalOut g_led_PTC2( PTC2, 0 );
+
+DigitalIn g_but_PTC9(PTC9);
+DigitalIn g_but_PTC10(PTC10);
+DigitalIn g_but_PTC11(PTC11);
+
+class PWMLed
 {
-    static int l_ticks_of_led1 = 0;
-    static int l_ticks_of_led2 = 0;
-
-    int32_t l_periode_led_4allGeneral = 33;
-
-    /* myšlenka: DigitalOut leds[8] = {PTC4, PTC5, PTC7, PTC8};
-    if (g_but9 == 0 && conditionINDEX > 0)
-    {
-        conditionINDEX--;
+public:
+    PWMLed(DigitalOut & led ) : g_led(led){
+        this->brightness = 25;
+        this->ticks = 0;
     }
-
-    if (button_PTC10(PTC10) == 0)
+    void Blink()
     {
-        duty_cycle += 10;
-
-        if (   ... osetreni hranic (border) ...    )
+        if(this->ticks < this->brightness)
         {
-            duty_cycle = 2;
+            this->g_led = 1;
         }
-    }*/
+        else{
+            g_led = 0;
+        }
 
-    int duty_cycle_led1 = 50; // PWM duty cycle as a percentage (50 % = on half the time)
-    int duty_cycle_led2 = 89; // feel free to change my value
-
-    // calculate the duration of the on and off periods based on the duty cycle
-    int on_duration_led1 = l_periode_led_4allGeneral * duty_cycle_led1 / 100; // float??? :)
-    int on_duration_led2 = l_periode_led_4allGeneral * duty_cycle_led2 / 100;
-
-    // turn on the LED for the 'on_duration'
-    led1 = (l_ticks_of_led1 < on_duration_led1) ? 1 : 0; // if 1 ---> LED On
-    led2 = (l_ticks_of_led2 < on_duration_led2) ? 1 : 0; // if 1 ---> LED On
-
-    l_ticks_of_led1++;                                // milliseconds counter
-    if (l_ticks_of_led1 >= l_periode_led_4allGeneral) // end of periode?
-    {
-        l_ticks_of_led1 = 0; // start periode again
+        if (ticks < 25)
+        {
+        	ticks++;
+        }
+        else
+        {
+        	ticks = 0;
+        }
     }
 
-    l_ticks_of_led2++;                                // milliseconds counter
-    if (l_ticks_of_led2 >= l_periode_led_4allGeneral) // end of periode?
+    void IncreseLight()
     {
-        l_ticks_of_led2 = 0; // start periode again
+    	if (brightness < 25)
+    	{
+    		brightness++;
+    	}
     }
-}
-
-void control_from_ticker()
-{
-    static int l_ticks_of_led1 = 0;
-    static int l_ticks_of_led2 = 0;
-
-    int32_t l_periode_led_4allGeneral = 1000;
-
-    /***********************************core***********************************/
-    // turn on LEDs one by one
-    if (l_ticks_of_led1 == 0)                                // time to switch on?
-        led1 = 1;                                            // LED On
-    if (l_ticks_of_led1 >= l_periode_led_4allGeneral * 0.75) // end of periode?
-        led1 = 0;                                            // LED Off
-
-    if (l_ticks_of_led2 == l_periode_led_4allGeneral * 0.25) // time to switch on?
-        led2 = 1;                                            // LED On
-    if (l_ticks_of_led2 == l_periode_led_4allGeneral * 0.50) // end of periode?
-        led2 = 0;                                            // LED Off
-    /***********************************core***********************************/
-
-    l_ticks_of_led1++;                                // milliseconds counter
-    if (l_ticks_of_led1 >= l_periode_led_4allGeneral) // end of periode?
+    void DecreseLight()
     {
-        l_ticks_of_led1 = 0; // start periode again
+    	if (brightness > 0)
+    	{
+    	    brightness--;
+    	}
     }
+private:
+    int brightness;
+    int ticks;
+    DigitalOut & g_led;
+};
 
-    l_ticks_of_led2++;                                // milliseconds counter
-    if (l_ticks_of_led2 >= l_periode_led_4allGeneral) // end of periode?
-    {
-        l_ticks_of_led2 = 0; // start periode again
-    }
-}
+
 
 int main()
 {
-    printf("--Poustim program a kontroluji seriovou linku ve skolnim terminalu :D--\n");
+    printf("This is the bare metal blinky example running on Mbed OS %d.%d.%d.\n", MBED_MAJOR_VERSION, MBED_MINOR_VERSION, MBED_PATCH_VERSION);
 
-    tick1.attach(callback(&breathingBrightness), 0.001f);
-    // tick2.attach(callback(&control_from_ticker), 0.001f);// NEpouštím zároveň (najednou)
+    PWMLed br(g_led_PTB2);
+    PWMLed bg(g_led_PTB3);
+    PWMLed bb(g_led_PTB9);
 
-    wait_ms(osWaitForever); // jen kvůli webové verzi, jinak u callbacku NEužívat (jako printf)
+
+
+    int i = 0;
+
+    Ticker t1;
+    Ticker t2;
+    Ticker t3;
+
+    t1.attach_us(callback(&br, &PWMLed::Blink), 1000);
+    t2.attach_us(callback(&bg, &PWMLed::Blink), 1000);
+    t3.attach_us(callback(&bb, &PWMLed::Blink), 1000);
+
+    while (true){
+    	if(!g_but_PTC11){
+    		i++;
+    		while(!g_but_PTC11);
+    		if (i>=3)
+    		{
+    			i = 0;
+    		}
+
+    	}
+    	switch (i){
+    		case 0:
+    			g_led_PTC0 = 1;
+    			g_led_PTC2 = 0;
+    			if(!g_but_PTC9)
+    			{
+    				br.DecreseLight();
+    			 	while(!g_but_PTC9);
+    			 }
+    			 if(!g_but_PTC10)
+    			 {
+    			     br.IncreseLight();
+    			     while(!g_but_PTC10);
+    			  }
+    			break;
+    		case 1:
+    			g_led_PTC0 = 0;
+    			g_led_PTC1 = 1;
+    			if(!g_but_PTC9)
+    			{
+    			     bb.DecreseLight();
+    			     while(!g_but_PTC9);
+    			}
+    			if(!g_but_PTC10)
+    			{
+    			      bb.IncreseLight();
+    			      while(!g_but_PTC10);
+    			}
+    			break;
+    		case 2:
+    			g_led_PTC1 = 0;
+    			g_led_PTC2 = 1;
+    			if(!g_but_PTC9)
+    			{
+    			      bg.DecreseLight();
+    			      while(!g_but_PTC9);
+    			}
+    			if(!g_but_PTC10)
+    			{
+    			    bg.IncreseLight();
+    			    while(!g_but_PTC10);
+    			}
+    			break;
+    		}
+
+    }
 }
