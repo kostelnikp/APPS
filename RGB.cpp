@@ -7,8 +7,9 @@ DigitalOut g_led_PTB3( PTB3, 0 );
 DigitalOut g_led_PTB9( PTB9, 0 );
 
 
-DigitalOut g_led_PTA1( PTA1, 0 );
-DigitalOut g_led_PTA2( PTA2, 0 );
+DigitalOut g_led_PTC0( PTC0, 0 );
+DigitalOut g_led_PTC1( PTC1, 0 );
+DigitalOut g_led_PTC2( PTC2, 0 );
 
 DigitalIn g_but_PTC9(PTC9);
 DigitalIn g_but_PTC10(PTC10);
@@ -18,7 +19,7 @@ class PWMLed
 {
 public:
     PWMLed(DigitalOut & led ) : g_led(led){
-        this->brightness = 27;
+        this->brightness = 25;
         this->ticks = 0;
     }
     void Blink()
@@ -31,7 +32,7 @@ public:
             g_led = 0;
         }
 
-        if (ticks < 27)
+        if (ticks < 25)
         {
         	ticks++;
         }
@@ -43,7 +44,7 @@ public:
 
     void IncreseLight()
     {
-    	if (brightness < 27)
+    	if (brightness < 25)
     	{
     		brightness++;
     	}
@@ -71,7 +72,7 @@ int main()
     PWMLed bg(g_led_PTB3);
     PWMLed bb(g_led_PTB9);
 
-    //PWMLed b1[] = {br,bg,bb};
+
 
     int i = 0;
 
@@ -86,7 +87,7 @@ int main()
     while (true){
     	if(!g_but_PTC11){
     		i++;
-    		while(!g_but_PTC10);
+    		while(!g_but_PTC11);
     		if (i>=3)
     		{
     			i = 0;
@@ -95,6 +96,8 @@ int main()
     	}
     	switch (i){
     		case 0:
+    			g_led_PTC0 = 1;
+    			g_led_PTC2 = 0;
     			if(!g_but_PTC9)
     			{
     				br.DecreseLight();
@@ -107,6 +110,8 @@ int main()
     			  }
     			break;
     		case 1:
+    			g_led_PTC0 = 0;
+    			g_led_PTC1 = 1;
     			if(!g_but_PTC9)
     			{
     			     bb.DecreseLight();
@@ -119,6 +124,8 @@ int main()
     			}
     			break;
     		case 2:
+    			g_led_PTC1 = 0;
+    			g_led_PTC2 = 1;
     			if(!g_but_PTC9)
     			{
     			      bg.DecreseLight();
