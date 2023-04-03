@@ -71,7 +71,7 @@ int main()
     PWMLed bg(g_led_PTB3);
     PWMLed bb(g_led_PTB9);
 
-    PWMLed b1[] = {br,bg,bb};
+    //PWMLed b1[] = {br,bg,bb};
 
     int i = 0;
 
