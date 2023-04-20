@@ -1,0 +1,27 @@
+bool send_number(uint8_t number){
+        i2c_start();
+        ack = i2c_output( 0x40 | adress | W );
+        if(ack != 0){
+            return false;
+        }
+        ack = i2c_output(number);
+        if(ack != 0){
+                    return false;
+        }
+        i2c_stop();
+        return true;
+    }
+    bool stack(uint8_t number){
+        uint8_t sloupec = 0;
+        if(number == 0 && number < 9){
+            this->send_number(sloupec);
+        }else{
+            for(int i = 0; i < number; i++){
+                sloupec |= 1;
+                if(i != number - 1){
+                    sloupec = sloupec << 1;
+                }
+            }
+            this->send_number(sloupec);
+        }
+    }
