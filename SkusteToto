@@ -162,6 +162,7 @@ int main() {
 	int temp = 0;
 	Radio radio;
 	int l_ack;
+	int l_ack_pole[8];
 	i2c_init();
 
 	if ((l_ack = si4735_init() != 0)) {
@@ -235,8 +236,6 @@ int main() {
 				} else {
 					printf("Current tuned frequency: %d.%dMHz\r\n",
 							frekvencia / 100, frekvencia % 100);
-					//printf("Current radio station: %s", radio.getStationName());
-					radio.funkcia();
 				}
 				while (!but4)
 					;
@@ -258,9 +257,6 @@ int main() {
 				} else {
 					printf("Current tuned frequency: %d.%dMHz\r\n",
 							frekvencia / 100, frekvencia % 100);
-					//printf("Current radio station: %s", radio.getStationName());
-
-					radio.funkcia();
 				}
 				while (!but3)
 					;
@@ -275,11 +271,6 @@ int main() {
 
 			if (!but4) {
 				l_ack = radio.search_freqUP();
-				int snr = radio.funkcia();
-				if (snr >= 8) {
-					snr = 8;
-				}
-				led.funkciaLED(snr);
 				if (l_ack != 0) {
 					printf("Communication error!\r\n");
 				} else {
@@ -291,12 +282,6 @@ int main() {
 			}
 			if (!but3) {
 				l_ack = radio.search_freqDOWN();
-				int snr = radio.funkcia();
-				if(snr >= 8)
-				{
-					snr = 8;
-				}
-				led.funkciaLED(snr);
 				if (l_ack != 0) {
 					printf("Communication error!\r\n");
 				} else {
